@@ -3,6 +3,7 @@ package com.bookify.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -32,9 +34,10 @@ public class SecurityConfig {
 
 		return http.csrf(csrf -> csrf.disable())
 				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-				.authorizeHttpRequests(auth -> auth.requestMatchers(LOGIN).permitAll().requestMatchers(REGISTER)
-						.permitAll().requestMatchers(REFRESH_TOKEN).permitAll().requestMatchers(SWAGGER).permitAll()
-						.requestMatchers(CONSOLE).permitAll().anyRequest().authenticated())
+				.authorizeHttpRequests(auth -> auth.requestMatchers(LOGIN, REGISTER, REFRESH_TOKEN).permitAll()
+						.requestMatchers(SWAGGER).permitAll().requestMatchers(CONSOLE).permitAll()
+						.requestMatchers("/api/host/**").hasAnyRole("USER", "ADMIN").requestMatchers("/api/property/**")
+						.hasAnyRole("USER", "ADMIN").anyRequest().authenticated())
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider)
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).build();

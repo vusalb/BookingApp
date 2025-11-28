@@ -9,16 +9,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.bookify.entity.User;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
 	private final User user;
 
+	public CustomUserDetails(User user) {
+		this.user = user;
+	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName().name()))
+		return user.getRoles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName().name()))
 				.collect(Collectors.toList());
 	}
 

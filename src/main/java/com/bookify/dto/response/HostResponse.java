@@ -1,5 +1,7 @@
 package com.bookify.dto.response;
 
+import java.time.LocalDate;
+
 import lombok.Data;
 
 @Data
@@ -9,13 +11,11 @@ public class HostResponse {
 
 	private String lastName;
 
-	private String gender;
+	private String email;
 
-	private Integer birthOfDate;
+	private LocalDate birthOfDate;
 
 	private String country;
-
-	private String email;
 
 	private String phone;
 

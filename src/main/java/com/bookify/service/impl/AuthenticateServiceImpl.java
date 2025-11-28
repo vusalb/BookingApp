@@ -50,8 +50,8 @@ public class AuthenticateServiceImpl implements AuthenticateService {
 			throw new AlreadyExistException("Email is already in use.");
 		}
 
-		Role userRole = roleRepository.findByRoleName(RoleName.ROLE_USER)
-				.orElseGet(() -> roleRepository.save(new Role(null, RoleName.ROLE_USER)));
+		Role userRole = roleRepository.findByRoleName(RoleName.USER)
+				.orElseThrow(() -> new MyApplicationException("USER role is missing in DB"));
 
 		User user = User.builder().email(register.getEmail()).password(passwordEncoder.encode(register.getPassword()))
 				.roles(Set.of(userRole)).build();

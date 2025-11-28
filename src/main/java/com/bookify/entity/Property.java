@@ -1,9 +1,9 @@
 package com.bookify.entity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -12,7 +12,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,8 +26,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Property extends BaseEntity {
 
-	@Column(name = "name")
-	private String name;
+	@Column(name = "title")
+	private String title;
 
 	@Column(name = "description")
 	private String description;
@@ -48,8 +47,10 @@ public class Property extends BaseEntity {
 	@Column(name = "country", nullable = false)
 	private String country;
 
-	@Column(name = "image", nullable = false)
-	private String imageURL;
+	@ElementCollection
+	@CollectionTable(name = "property_images", joinColumns = @JoinColumn(name = "property_id"))
+	@Column(name = "image_url")
+	private List<String> imageUrl;
 
 	@ElementCollection
 	@CollectionTable(name = "property_amenities", joinColumns = @JoinColumn(name = "property_id"))
@@ -60,8 +61,5 @@ public class Property extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "host_id")
 	private Host host;
-
-	@OneToOne(mappedBy = "property", cascade = CascadeType.ALL)
-	private Booking booking;
 
 }

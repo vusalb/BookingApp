@@ -5,10 +5,11 @@ import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.bookify.config.UserDetailsServiceImpl;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -23,40 +24,33 @@ import lombok.RequiredArgsConstructor;
 public class JwtFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
-	private final UserDetailsService userDetailsService;
+	private final UserDetailsServiceImpl userDetailsServiceImpl;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
 		String header = request.getHeader("Authorization");
-		String token = null;
-		String username = null;
-
-		if (header == null || !header.startsWith("Bearer")) {
-
+		if (header == null || !header.startsWith("Bearer ")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		token = header.substring(7);
+
+		String token = header.substring(7);
 
 		try {
-
-			username = jwtService.extractEmail(token);
+			String username = jwtService.extractEmail(token);
 
 			if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+				UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
 
 				if (jwtService.validateToken(token, userDetails)) {
+					UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+							null, userDetails.getAuthorities());
 
-					UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-							username, null, userDetails.getAuthorities());
-
-					authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-					SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
+					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(authToken);
 				}
-
 			}
 
 			filterChain.doFilter(request, response);
@@ -65,9 +59,6 @@ public class JwtFilter extends OncePerRequestFilter {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Expired JWT token");
 		} catch (JwtException e) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
-		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
 		}
 	}
-
 }
